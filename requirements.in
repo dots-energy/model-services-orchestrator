@@ -1,0 +1,4 @@
+kubernetes==19.*
+protobuf==3.*
+asyncio-mqtt==0.*
+python-dotenv==0.*

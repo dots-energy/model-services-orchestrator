@@ -1,0 +1,10 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+#     network_mode: host
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/mqtt_passwd:/mosquitto/config/mqtt_passwd

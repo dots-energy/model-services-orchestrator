@@ -1,0 +1,13 @@
+version: "3.9"  # optional since v1.27.0
+services:
+ model-services-orchestrator:
+    image: ci.tno.nl/dots/model-services-orchestrator
+    network_mode: host
+    env_file: .env
+    environment:
+      - LOG_LEVEL=DEBUG
+
+  mosquitto:
+    extends:
+      file: ./simulation_components/docker-compose.mosquitto.yml
+      service: mosquitto

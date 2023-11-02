@@ -1,0 +1,12 @@
+[MASTER]
+ignore=model_services_orchestrator/messages
+generated-members=model_services_orchestrator.messages.*
+disable=
+    missing-function-docstring,
+    missing-class-docstring,
+    missing-module-docstring,
+    too-few-public-methods,
+    logging-fstring-interpolation
+
+[FORMAT]
+max-line-length=120

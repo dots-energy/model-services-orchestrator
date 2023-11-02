@@ -1,0 +1,16 @@
+from fake_model.messages.healthcheck_pb2 import (HealthStatus,
+                                                                  PingHealthSOToMSO,
+                                                                  PongHealthMSOToSO,
+                                                                  PingHealthMSOToModel,
+                                                                  PongHealthModelToMSO)
+from fake_model.messages.lifecycle_pb2 import (EnvironmentVariable,
+                                                                ModelConfiguration,
+                                                                DeployModels,
+                                                                ReadyForProcessing,
+                                                                ModelsReady,
+                                                                SimulationDone,
+                                                                UnhealthyModelStatus,
+                                                                UnhealthyModel,
+                                                                TerminationStatus,
+                                                                ModelHasTerminated,
+                                                                AllModelsHaveTerminated)

@@ -1,0 +1,60 @@
+variables:
+    CI_TNO_REGISTRY: ci.tno.nl/dots/model-services-orchestrator
+    CI_CONTAINER_IMAGE: ci.tno.nl/dots/model-services-orchestrator
+
+default:
+  image: python:3.9.0
+
+stages:
+  - prepare
+  - lint
+  - test
+  - build
+  - deploy
+
+cache:
+  key: $CI_COMMIT_REF_SLUG
+  paths:
+    - .venv/
+
+prepare_env:
+  stage: prepare
+  script:
+    - ci/prepare_dev_env.sh
+  artifacts:
+    paths:
+      - .venv/
+
+lint:
+  stage: lint
+  dependencies:
+    - prepare_env
+  script:
+    - ci/lint.sh
+
+test:
+  stage: test
+  dependencies:
+    - prepare_env
+  script:
+    - ci/test_unit.sh
+
+build:
+  stage: build
+  image: docker:stable
+  script:
+    - docker build -t $CI_CONTAINER_IMAGE:latest ./
+
+deploy:
+  only:
+    - master
+  stage: deploy
+  image: docker:stable
+  dependencies:
+    - build
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_TNO_REGISTRY
+  script:
+    - docker tag $CI_CONTAINER_IMAGE:latest $CI_CONTAINER_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_CONTAINER_IMAGE:latest
+    - docker push $CI_CONTAINER_IMAGE:$CI_COMMIT_SHORT_SHA

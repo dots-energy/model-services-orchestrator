@@ -1,0 +1,77 @@
+@startuml
+skinparam sequenceMessageAlign reversedirection
+
+actor "Simulation Requester" as sim_req
+participant SO as so
+participant "model-services-orchestrator" as mso
+participant "external model 1" as model_1
+participant "external model 2" as model_2
+participant "Kubernetes (Deployment backplane)" as deploy_plane
+
+activate mso #lightblue
+activate so #lightblue
+activate deploy_plane #lightblue
+
+sim_req -> so : Create Simulation (REST)
+so -> so : Parse ESDL & Generate simulation ID (action)
+activate so #darkblue
+so --> sim_req : HTTP ok with simulation ID (REST)
+so -> mso : DeployModels (MQTT)
+deactivate so
+mso -> deploy_plane : Deploy the model container with env var deployment parameters (API)
+mso -> deploy_plane : Deploy the model container with env var deployment parameters (API)
+create model_1
+deploy_plane -> model_1 : Deploys container with env var deployment parameters (action)
+activate model_1 #lightblue
+create model_2
+deploy_plane -> model_2 : Deploys container with env var deployment parameters (action)
+activate model_2 #lightblue
+model_1 -> mso : ReadyForProcessing (MQTT)
+model_2 -> mso : ReadyForProcessing (MQTT)
+mso -> so : ModelsReady (MQTT)
+
+group SO<->Model simulation communication
+so -> model_1 : config (MQTT)
+so -> model_2 : config (MQTT)
+so -> so : Start Simulation (action)
+activate so #darkblue
+mso -> deploy_plane : Check if any models have terminated for active simulation(s) (API)
+    note right
+        Non SO <-> Model communication
+        that happens occasionally during
+        simulation to check if models
+        are still healthy according
+        to deployment backplane.
+    end note
+loop
+so -> model_1 : createBid (MQTT)
+so -> model_2 : createBid (MQTT)
+model_2 -> so : bid (MQTT)
+model_1 -> so : bid (MQTT)
+so -> model_1 : allocate (MQTT)
+so -> model_2 : allocate (MQTT)
+end
+mso -> deploy_plane : Check if any models have terminated for active simulation(s) (API)
+    note right: Checked here again
+end
+
+mso -> deploy_plane : Check if any models have terminated for active simulation(s) (API)
+    note right: Checked here again
+so -> mso : SimulationDone (MQTT)
+so -> model_1 : end (MQTT)
+model_1 -> model_1 : Terminate (action)
+deactivate model_1
+destroy model_1
+so -> model_2 : end (MQTT)
+model_2 -> model_2 : Terminate (action)
+deactivate model_2
+destroy model_2
+mso -> deploy_plane : Check if any models have terminated for active simulation(s) (API)
+    note right: Checked here again
+mso -> so : ModelHasTerminatedSucessfully for model 1 (MQTT)
+mso -> so : ModelHasTerminatedSucessfully for model 2 (MQTT)
+mso -> so : AllModelsHaveTerminated (MQTT)
+so -> so : Terminate Simulation (action)
+deactivate so
+
+@enduml
